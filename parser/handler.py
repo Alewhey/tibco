@@ -1,10 +1,8 @@
-import tibparser as tp
-import tibio
+import parser
+import iosql
 import argparse
-import tibtools as tt
-import gzip
+import tools
 import sys
-tools = tt.Tools()
 
 
 def main():
@@ -31,11 +29,9 @@ def handler(start, fin, subject, dbpath, newdb):
     unzip, concatenate, filter, parse and save to SQLite.'''
     # handler should mainly just call functions and print outcomes,
     # not process data.
-    subject = tools.verify_subject(subject)
-    filt_str = '.' + subject
     datelist = tools.date_list(start, fin)
     # connect to database and check if data exists
-    tsql = TibSQL(subject, dbpath)
+    tsql = io.TibSQL(subject, dbpath)
     sql_missing_dates = tsql.get_missing_dates(datelist)
     # if data missing, check gz has been downloaded and launch processor
     if sql_missing_dates:
@@ -43,13 +39,13 @@ def handler(start, fin, subject, dbpath, newdb):
         print "Data missing from database for following dates:"
         print ', '.join([d.isoformat() for d in sql_missing_dates])
         # Create TibIO object to handle gz downloads
-        tio = tibio.TibIO(tools.gzloc, datelist)
+        tio = iosql.TibIO(datelist)
         if tio.missing_gz:
             tio.download_gz()
         for raw in tio.get_raw_data():
             sys.stdout.write("\rProcessing file %s of %s..." % (n + 1, nmiss))
             sys.stdout.flush()
-            p = tp.TibcoParser(raw, subject)
+            p = parser.TibcoParser(raw, subject)
         # save dict to sql database
             tsql.dict_dump(subject, d)
         # update processed table

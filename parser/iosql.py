@@ -1,11 +1,11 @@
 import sqlite3 as sql
 from urllib import urlretrieve
-import tibtools as tt
+import tools
 import os
 import gzip
 
-dbpath = '/home/alex/Temp/tib.db'
-gzpath = '/home/alex/Temp/tibgz/'
+dbpath = 'data/tib.db'
+gzpath = 'data/tibgz/'
 
 
 class TibIO(object):
@@ -13,15 +13,15 @@ class TibIO(object):
     def __init__(self, datelist, gz_path = gzpath):
         self.gz_path = gz_path
         self.datelist = datelist
-        self._get_missing_gzs()
+        self._get_gz_missing_dates()
 
 
     def download_gz(self):
         '''Downloads tibco data from list of dates'''
-        print 'Downloading TIBCO data between dates ' + self.missing_gz[0].isoformat() +\
-              ' and ' + self.missing_gz[-1].isoformat(
-              ) + ' to folder:\n' + self.gz_path
-        for d, path in self._location_generator():
+        print 'Downloading TIBCO data between dates ' + self.gz_missing_dates[0].isoformat() +\
+              ' and ' + self.gz_missing_dates[-1].isoformat() + \
+              ' to folder:\n' + self.gz_path
+        for d, path in self._location_generator(self.gz_missing_dates):
             iso = d.isoformat()
             url = 'http://www.bmreports.com/tibcodata/tib_messages.' + \
                 iso + '.gz'
@@ -30,22 +30,22 @@ class TibIO(object):
                 urlretrieve(url, path)
             except IOError:
                 print "Download failed for date " + iso + ', skipping...'
-        self.get_missing_gzs()
+        self._get_gz_missing_dates()
 
-    def _get_missing_gzs(self):
+    def _get_gz_missing_dates(self):
         '''Checks if dates in datelist exists in gz_path'''
         fl = os.listdir(self.gz_path)
         fs = [s[:-3] for s in fl if s.endswith('.gz')]
-        self.missing_gz = [d for d in self.datelist if not d.isoformat() in fs]
+        self.gz_missing_dates = [d for d in self.datelist if not d.isoformat() in fs]
 
-    def _location_generator(self):
+    def _location_generator(self, dates):
         """Generator yielding dates objects and corresponding gzip filepaths"""
-        for d in self.datelist:
+        for d in dates:
             yield d, self.gz_path + d.isoformat() + '.gz'
 
     def raw_data_generator(self):
         """Yields raw data based on dates in datelist"""
-        for d, path in self._location_generator():
+        for d, path in self._location_generator(self.datelist):
             yield gzip.open(path).read()
 
 
