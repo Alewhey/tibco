@@ -11,7 +11,7 @@ BM Units: https://downloads.elexonportal.co.uk/file/download/REGISTERED_BMUNITS_
 _isostring = '%Y-%m-%d'
 _subjectlist = ["MELNGC", "IMBALNGC", "TSDF", "NETBSAD", "BOALF", "DF",
         "INDOD", "DISPTAV", "FPN", "RDRE", "MID", "NDZ", "DISBSAD",
-        "TSDFD", "DISEBSP", "NDFD", "FREQ", "NDF", "BOAV", "INDO",
+        "TSDFD", "DISEBSP", "NDFD", "FREQ", "NDF", "BOAV", "INDO", "SYSWARN",
         "MIL", "MZT", "ITSDO", "INDDEM", "SEL", "QPN", "TEMP", "BOD",
         "TBOD", "NONBM", "RURE", "ISPSTACK", "EBOCF", "MNZT", "FUELINST"]
 
@@ -30,7 +30,7 @@ _known_subject_types = ['BM.BMUNIT.BOALF', 'BM.BMUNIT.BOAV.RANK',
 
 _types = { 'Date': 'timestamp', 'TS': 'timestamp', 'SD': 'timestamp', 'TP': 'timestamp',
         'SP': 'int', 'MsgID': 'int', 'NP': 'int', 'TR': 'int', 'NR': 'int', 'FG': 'int',
-        'VE': 'int', 'VP': 'int', 'SF': 'float', 'EH': 'float', 'EL': 'float', 'EN': 'float',
+        'VE': 'int', 'VP': 'float', 'SF': 'float', 'EH': 'float', 'EL': 'float', 'EN': 'float',
         'EO': 'float', 'VG': 'float', 'TH': 'float', 'TL': 'float', 'TN': 'float',
         'TO': 'float', 'VD': 'float', 'Subject': 'string', 'SW': 'string', 'FT': 'string' }
 
@@ -118,7 +118,7 @@ def msg_typer(key):
             return int
         elif f == 'timestamp':
             return parse_datetime
-    else: return str
+    return str
     
 
 def verify_subject(fs):

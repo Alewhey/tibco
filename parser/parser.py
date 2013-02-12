@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 import re
-from collections import Counter, defaultdict
+from collections import defaultdict
 import tools
 
 
 class TibcoParser(object):
+    """Main parser object.
+
+    Parses raw text to message objects which are appended to self.messages.
+    Therefore this class is both parser and a datastructure"""
     def __init__(self, raw=None, filt_str=None, verbose=False):
         self._verbose = verbose
         self.messages = []
@@ -53,12 +57,40 @@ class TibcoParser(object):
         for dat in sorted(s):
             print dat, tools._types[dat]
 
-
-
-
-
     def gather(self, dat):
-        return [m.data[dat.upper()] for m in self]
+        dat = dat.upper()
+        return [m.data[dat] for m in self]
+
+    def to_simple_dict(self):
+        """Flat dict for simple subject types"""
+        d = defaultdict(list)
+        for m in self:
+            d['Date'].append(m.date)
+            d['Subject'].append(m.subject)
+            for k,v in m.data.items():
+                d[k].extend(v)
+        return d
+
+    def to_complex_dict(self, flat = False):
+        """nested dict with subject as first key"""
+        d = defaultdict(lambda: defaultdict(list))
+        if flat:
+            for m in self:
+                subd = d[m.subject]
+                subd['Date'].append(m.date)
+                for k,v in m.data.items():
+                    subd[k].extend(v)       #difference!
+        else:
+            for m in self:
+                subd = d[m.subject]
+                subd['Date'].append(m.date)
+                for k,v in m.data.items():
+                    subd[k].append(v)       #difference!
+        #if only 1 key, return nested dict only
+        if len(d.keys()) == 1: return d[d.keys()[0]]
+        else: return d
+
+
 
     def __repr__(self):
         return "<TibcoParser|Subject:{0}|Messages:{1}>".format(
@@ -67,6 +99,12 @@ class TibcoParser(object):
     def __iter__(self):
         for m in self.messages:
             yield m
+
+    def __getitem__(self,n):
+        return self.messages[n]
+
+    def __len__(self):
+        return len(self.messages)
 
 
 class Message(object):
@@ -84,6 +122,7 @@ class Message(object):
     def __repr__(self):
         return '<Message {0}|Date {1}>'.format(
                 self.subject, self.date.isoformat())
+
 
 
         
