@@ -4,7 +4,7 @@ from collections import defaultdict
 import tools
 
 
-class TibcoParser(object):
+class TibParser(object):
     """Main parser object.
 
     Parses raw text to message objects which are appended to self.messages.

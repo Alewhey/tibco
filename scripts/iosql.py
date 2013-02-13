@@ -57,7 +57,7 @@ class TibIO(object):
         return self._raw_data_generator()
 
 class TibPanda(object):
-    """Collection of functions to interfaces pandas as parser dict"""
+    """Collection of functions to interface pandas and parser dict"""
     def __init__(self):
         pass
 
@@ -85,13 +85,15 @@ class TibPanda(object):
     def make_joined_df(self, d):
         """Takes nested dict; returns fully cleaned merged dataset"""
         dfs = [self.to_dataframe(dat, sj) for sj,dat in d.items()]
-        tmp = dfs[0].join(dfs[1:], how = 'outer')
-        return tmp.apply(pd.Series.interpolate,method ='time') 
+        if len(dfs) > 1:
+            tmp = dfs[0].join(dfs[1:], how = 'outer')
+            return tmp.apply(pd.Series.interpolate,method ='time') 
+        else:
+            return dfs[0]
         
-
     def _guess_best_data(self,keys):
         """Guess which time, data series we are interested in"""
-        for t in ['TS','SD','TP']:
+        for t in ['TS','TP']:
             if t in keys:
                 time = t
                 break
@@ -104,6 +106,22 @@ class TibPanda(object):
         except:
             raise KeyError("Cannot find appropriate data for DataFrame")
 
+
+class TibTables(pd.HDFStore):
+    """Subclass of HDF5Store with extra functions for querying store"""
+    def __init__(self, dbpath):
+        super(TibTables,self).__init__(dbpath)
+
+    def schema(self):
+        """This will give info about what is stored in the store"""
+        print 'Not implemented yet!'
+
+    def query(self):
+        pass
+
+#TODO: Implement querying system so as to allow seamless saving/loading/downloading
+#TODO: Link fuel types/bmu data.csv files to subjects
+#TODO: Write front-end interface
 
 
 

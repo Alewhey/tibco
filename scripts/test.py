@@ -12,13 +12,13 @@ e = dt.date(2012,1,2)
 datelist = tools.date_list(s,e)
 tio = iosql.TibIO(datelist)
 
-p = parser.TibcoParser()
+p = parser.TibParser()
 for raw in tio.check_and_get():
     p.parse(raw, 'FPN')
 
 d = p.to_dict()
 tp = iosql.TibPanda()
-d = tp.filtered(d, 'T_')
+d = tp.filtered(d, 'DRAX')
 df = tp.make_joined_df(d)
 
 
