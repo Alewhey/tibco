@@ -3,6 +3,8 @@ from urllib import urlretrieve
 import tools
 import os
 import gzip
+from itertools import chain
+import pandas as pd
 
 dbpath = 'data/tib.db'
 gzpath = 'data/tibgz/'
@@ -16,7 +18,7 @@ class TibIO(object):
         self._get_gz_missing_dates()
 
 
-    def download_gz(self):
+    def _download_gz(self):
         '''Downloads tibco data from list of dates'''
         print 'Downloading TIBCO data between dates ' + self.gz_missing_dates[0].isoformat() +\
               ' and ' + self.gz_missing_dates[-1].isoformat() + \
@@ -43,10 +45,66 @@ class TibIO(object):
         for d in dates:
             yield d, self.gz_path + d.isoformat() + '.gz'
 
-    def raw_data_generator(self):
+    def _raw_data_generator(self):
         """Yields raw data based on dates in datelist"""
         for d, path in self._location_generator(self.datelist):
             yield gzip.open(path).read()
+
+    def check_and_get(self):
+        """Downloads files if necessary, returns raw gen"""
+        if self.gz_missing_dates:
+            self._download_gz()
+        return self._raw_data_generator()
+
+class TibPanda(object):
+    """Collection of functions to interfaces pandas as parser dict"""
+    def __init__(self):
+        pass
+
+    def filtered(self,d,filtstr):
+        """creates filtdict by filtering subject with filtname"""
+        return dict((k,v) for k,v in
+                d.items() if filtstr in k) 
+
+    def to_dataframe(self, d, name):
+        timestr, datastr = self._guess_best_data(d.viewkeys())
+        time = list(chain.from_iterable(d[timestr]))
+        data = list(chain.from_iterable(d[datastr]))
+        df = pd.DataFrame(data, index = time, columns = [name]) 
+        return self._remove_redundant_data(self._remove_dup_timestamps(df))
+
+
+    def _remove_dup_timestamps(self,df):
+        return df.groupby(df.index).mean()
+
+    def _remove_redundant_data(self,df):
+        """Remove rows which have same values above and below"""
+        tmp = df[(df.diff()!=0) | (df.diff(-1)!=0)]
+        return tmp.dropna()
+
+    def make_joined_df(self, d):
+        """Takes nested dict; returns fully cleaned merged dataset"""
+        dfs = [self.to_dataframe(dat, sj) for sj,dat in d.items()]
+        tmp = dfs[0].join(dfs[1:], how = 'outer')
+        return tmp.apply(pd.Series.interpolate,method ='time') 
+        
+
+    def _guess_best_data(self,keys):
+        """Guess which time, data series we are interested in"""
+        for t in ['TS','SD','TP']:
+            if t in keys:
+                time = t
+                break
+        for v in ['VP','SF','VD']:
+            if v in keys:
+                data = v
+                break
+        try:
+            return time, data
+        except:
+            raise KeyError("Cannot find appropriate data for DataFrame")
+
+
 
 
 class TibSQL(object):

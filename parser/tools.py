@@ -30,7 +30,7 @@ _known_subject_types = ['BM.BMUNIT.BOALF', 'BM.BMUNIT.BOAV.RANK',
 
 _types = { 'Date': 'timestamp', 'TS': 'timestamp', 'SD': 'timestamp', 'TP': 'timestamp',
         'SP': 'int', 'MsgID': 'int', 'NP': 'int', 'TR': 'int', 'NR': 'int', 'FG': 'int',
-        'VE': 'int', 'VP': 'float', 'SF': 'float', 'EH': 'float', 'EL': 'float', 'EN': 'float',
+        'VE': 'int', 'VP': 'flint', 'SF': 'float', 'EH': 'float', 'EL': 'float', 'EN': 'float',
         'EO': 'float', 'VG': 'float', 'TH': 'float', 'TL': 'float', 'TN': 'float',
         'TO': 'float', 'VD': 'float', 'Subject': 'string', 'SW': 'string', 'FT': 'string' }
 
@@ -83,11 +83,6 @@ mtypedict = {
         'WINDFOR': ['NR', 'SD', 'SP', 'TP', 'TR', 'VG']}
 
 #------Date functions-------
-def convert_datetime_list(l):
-    def convert_datetime(x):
-        return '%s-%s-%s %s:%s:%s' % (x[:4], x[5:7], x[8:10], x[11:13], x[14:16], x[17:19])
-    return map(convert_datetime, l)
-
 
 def parse_date(datestr):
     return datetime.datetime.strptime(datestr, _isostring).date()
@@ -118,8 +113,12 @@ def msg_typer(key):
             return int
         elif f == 'timestamp':
             return parse_datetime
+        elif f == 'flint':
+            return flint
     return str
     
+def flint(string):
+    return int(float(string))
 
 def verify_subject(fs):
     '''Checks the subject against subject dictionary. Raises

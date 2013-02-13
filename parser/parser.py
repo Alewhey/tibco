@@ -61,17 +61,7 @@ class TibcoParser(object):
         dat = dat.upper()
         return [m.data[dat] for m in self]
 
-    def to_simple_dict(self):
-        """Flat dict for simple subject types"""
-        d = defaultdict(list)
-        for m in self:
-            d['Date'].append(m.date)
-            d['Subject'].append(m.subject)
-            for k,v in m.data.items():
-                d[k].extend(v)
-        return d
-
-    def to_complex_dict(self, flat = False):
+    def to_dict(self, flat = False, simplify = False):
         """nested dict with subject as first key"""
         d = defaultdict(lambda: defaultdict(list))
         if flat:
@@ -87,8 +77,9 @@ class TibcoParser(object):
                 for k,v in m.data.items():
                     subd[k].append(v)       #difference!
         #if only 1 key, return nested dict only
-        if len(d.keys()) == 1: return d[d.keys()[0]]
-        else: return d
+        if simplify:
+            if len(d.keys()) == 1: return d[d.keys()[0]]
+        return d
 
 
 

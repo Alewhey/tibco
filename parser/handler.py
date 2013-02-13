@@ -56,9 +56,5 @@ def handler(start, fin, subject, dbpath, newdb):
         print "Data already exists in database. No action performed."
 
 
-def print_types():
-    for x in sorted(subjectdict):
-        print x,
-
 if __name__ == '__main__':
     main()
