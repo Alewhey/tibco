@@ -10,7 +10,7 @@ BM Units: https://downloads.elexonportal.co.uk/file/download/REGISTERED_BMUNITS_
 
 _isostring = '%Y-%m-%d'
 _subjectlist = ["MELNGC", "IMBALNGC", "TSDF", "NETBSAD", "BOALF", "DF",
-        "INDOD", "DISPTAV", "FPN", "RDRE", "MID", "NDZ", "DISBSAD",
+        "INDOD", "DISPTAV", "FPN", "RDRE", "MID", "MEL", "NDZ", "DISBSAD",
         "TSDFD", "DISEBSP", "NDFD", "FREQ", "NDF", "BOAV", "INDO", "SYSWARN",
         "MIL", "MZT", "ITSDO", "INDDEM", "SEL", "QPN", "TEMP", "BOD",
         "TBOD", "NONBM", "RURE", "ISPSTACK", "EBOCF", "MNZT", "FUELINST"]
@@ -30,7 +30,7 @@ _known_subject_types = ['BM.BMUNIT.BOALF', 'BM.BMUNIT.BOAV.RANK',
 
 _types = { 'Date': 'timestamp', 'TS': 'timestamp', 'SD': 'timestamp', 'TP': 'timestamp',
         'SP': 'int', 'MsgID': 'int', 'NP': 'int', 'TR': 'int', 'NR': 'int', 'FG': 'int',
-        'VE': 'int', 'VP': 'flint', 'SF': 'float', 'EH': 'float', 'EL': 'float', 'EN': 'float',
+        'VE': 'flint', 'VP': 'flint', 'SF': 'float', 'EH': 'float', 'EL': 'float', 'EN': 'float',
         'EO': 'float', 'VG': 'float', 'TH': 'float', 'TL': 'float', 'TN': 'float',
         'TO': 'float', 'VD': 'float', 'Subject': 'string', 'SW': 'string', 'FT': 'string' }
 
@@ -127,9 +127,5 @@ def verify_subject(fs):
         return fs.upper()
     else:
         print "Error: invalid subject string. Must be one of following:"
-        print_types()
+        print ' | '.join(sorted(_subjectlist))
         raise IOError
-
-def print_types():
-    for x in sorted(_subjectlist):
-        print x,

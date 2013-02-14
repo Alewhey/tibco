@@ -43,7 +43,7 @@ class TibParser(object):
                 return False
             else: return True
         elif self.filt_str == '.MEL':
-            if 'INDOD' in sj:
+            if 'MELNGC' in sj:
                 return False
             else: return True
         else: return True
@@ -81,8 +81,6 @@ class TibParser(object):
             if len(d.keys()) == 1: return d[d.keys()[0]]
         return d
 
-
-
     def __repr__(self):
         return "<TibcoParser|Subject:{0}|Messages:{1}>".format(
                 self.filt_str,len(self.messages))
@@ -114,12 +112,9 @@ class Message(object):
         return '<Message {0}|Date {1}>'.format(
                 self.subject, self.date.isoformat())
 
+class DictParsers(object):
+    """Class to turn parser object into dict based on 
+    subject and message characteristics"""
 
-
-        
-
-
-#TODO: LOTS! Rewrite parser to work on message object. Need to find sensible
-#way of storing attribues (dictionary?) and 'type' the messages
-#Add methods to Parser class to deliver eg all messages in a dict etc
-#Going to be a much nicer more flexible more extensible interface when finished
+    def generic(self):
+        """Seems to work with FPN, ??MEL??, INDO, FREQ"""

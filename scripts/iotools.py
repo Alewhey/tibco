@@ -34,7 +34,7 @@ class TibIO(object):
                 urlretrieve(url, path)
             except IOError:
                 print "Download failed for date " + iso + ', skipping...'
-        self.gz_missing_dates = self._get_gz_missing_dates()
+        self.gz_missing_dates = self._get_gz_missing_dates(self.datelist)
 
     def _get_gz_missing_dates(self, datelist):
         '''Checks if dates in datelist exists in gz_path'''
@@ -53,7 +53,7 @@ class TibIO(object):
             yield gzip.open(path).read()
 
     def check_and_get(self):
-        """Downloads files if necessary, returns raw gen"""
+        """Convenience function. Downloads files if necessary, returns raw gen"""
         if self.gz_missing_dates:
             self._download_gz()
         return self._raw_data_generator()
@@ -98,7 +98,7 @@ class TibPanda(object):
             if t in keys:
                 time = t
                 break
-        for v in ['VP','SF','VD']:
+        for v in ['VP','SF','VD', 'VE']:
             if v in keys:
                 data = v
                 break
@@ -110,11 +110,10 @@ class TibPanda(object):
 
 class TibTables(pd.HDFStore):
     """Subclass of HDF5Store with extra functions for querying store"""
-    def __init__(self, dbpath):
+    def __init__(self, dbpath = 'data/data.db'):
         super(TibTables,self).__init__(dbpath)
         #if not '/master' in self.keys():
         #    self._create_master()
-
         
     def _create_master(self):
         #arbitrarily choose 2012
@@ -131,18 +130,45 @@ class TibTables(pd.HDFStore):
         df = pd.DataFrame(d, index = dl)
         self.put('master', df, table = True)
 
-    def schema(self):
-        """This will give info about what is stored in the store"""
-        print 'Not implemented yet!'
-
-    def query(self, subject, sdate, edate):
-        """Pass a subject and datelist; return list of missing dates"""
+    def query_data(self, subject, sdate, edate, return_df = False):
+        """Generates list of missing dates based on query"""
         #What is best way to search for the dates..?
-        #Need to keep 'master' database with date as index and bool columns
-        #query date -> if exists, read columns -> if subject column = False, return date
-        t1 = pd.Term('index', '>=', sdate)
-        t2 = pd.Term('index', '<=', edate)
-        self.select(
+        if isinstance(sdate,str):
+            sdate= tools.parse_date(sdate)
+        if isinstance(edate,str):
+            edate= tools.parse_date(edate)
+        wanted_dates = set(tools.date_list(sdate,edate))
+        #if subject table does not exist then all dates are missing
+        if not '/' + subject in self.keys():
+            return wanted_dates 
+        #prepare query
+        sdatetime = dt.datetime.combine(sdate,dt.time())
+        edatetime = dt.datetime.combine(edate,dt.time(23,59,59))
+        t1 = pd.Term('index', '>=', sdatetime)
+        t2 = pd.Term('index', '<=', edatetime)
+        #make query and process result
+        df = self.select(subject, where=[t1,t2])
+        exist_dates = set([ts.date() for ts in df.index])
+        missing_dates = sorted(wanted_dates.difference(exist_dates))
+        if return_df:
+            if missing_dates:
+                raise ValueError("Dates missing from database!")
+            else:
+                return df.sort()
+        else:
+            return missing_dates
+
+    def get_stored_dates(self):
+        d = {}
+        for k in self.keys():
+            df = self[k]
+            d[k] = sorted(set([ts.date() for ts in df.index]))
+        return d
+
+
+
+
+
 
 
 
@@ -151,4 +177,3 @@ class TibTables(pd.HDFStore):
 #TODO: Implement querying system so as to allow seamless saving/loading/downloading
 #TODO: Link fuel types/bmu data.csv files to subjects
 #TODO: Write front-end interface
-
