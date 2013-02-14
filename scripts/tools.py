@@ -130,9 +130,6 @@ def verify_subject(fs):
         print_types()
         raise IOError
 
-
 def print_types():
     for x in sorted(_subjectlist):
         print x,
-
-

@@ -1,11 +1,10 @@
-import handler
 import parser
-import iosql
+import iotools
 import tools
 import datetime as dt
 import pandas as pd
 import matplotlib.pyplot as plt
-
+"""
 s = dt.date(2012,1,1)
 e = dt.date(2012,1,2)
 
@@ -20,15 +19,15 @@ d = p.to_dict()
 tp = iosql.TibPanda()
 d = tp.filtered(d, 'DRAX')
 df = tp.make_joined_df(d)
-
-
-
 """
-dpow = [pd.DataFrame(dat['VP'],dat['TS'],['VS'+str(ix)]) for ix,dat in enumerate(drax)]
 
-df = dpow[0].join(dpow[1:])
-df2 = df.apply(pd.Series.interpolate,method='time') 
+#dummy data
+s = dt.datetime(2012,1,1,11,22,33)
+e = dt.datetime(2012,1,1,11,22,33) + (dt.timedelta(1) * 99)
+d = {'Date': tools.date_list(s,e), 'A':list(xrange(100)), 'B': list(xrange(100,0,-1))}
+df = pd.DataFrame(d)
+df.set_index('Date', inplace=True)
+store = iotools.TibTables('data/store.h5')
 
-df2.plot()
 
-plt.show()"""
+
