@@ -98,7 +98,7 @@ class TibPanda(object):
             if t in keys:
                 time = t
                 break
-        for v in ['VP','SF','VD', 'VE']:
+        for v in ['VP','SF','VD', 'VE','FG']:
             if v in keys:
                 data = v
                 break
@@ -174,6 +174,6 @@ class TibTables(pd.HDFStore):
 
 
 
-#TODO: Implement querying system so as to allow seamless saving/loading/downloading
+#TODO: Improve querying system so as to stop false positives
 #TODO: Link fuel types/bmu data.csv files to subjects
 #TODO: Write front-end interface

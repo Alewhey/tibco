@@ -9,15 +9,16 @@ class TibParser(object):
 
     Parses raw text to message objects which are appended to self.messages.
     Therefore this class is both parser and a datastructure"""
-    def __init__(self, raw=None, filt_str=None, verbose=False):
+    def __init__(self, raw=None, subject=None, verbose=False):
         self._verbose = verbose
         self.messages = []
-        if raw and filt_str:
-            self.parse(raw, filt_str)
+        self.dp = DictParser()
+        if raw and subject:
+            self.parse(raw, subject)
 
     def parse(self, raw, subject):
         """Parses raw to return lists of dates,subjects and messages"""
-        self.filt_str = '.' + tools.verify_subject(subject)
+        self.subject = tools.verify_subject(subject)
         msgre = re.compile(r'([^=]+)=([^,$]+),?')
         self._raw = raw
         #primary parsing
@@ -29,7 +30,7 @@ class TibParser(object):
                     date, sj, re.findall(msgre, msg+',')))
 
     def _matcher(self):
-        matchstr = r'^([\d:]+GMT):\ssubject=BMRA\.?([\w.-]*' + self.filt_str + \
+        matchstr = r'^([\d:]+GMT):\ssubject=BMRA\.?([\w.-]*.'+self.subject+\
             r'[\w.-]*),\smessage=\{([^}]*)\}\n'
         match = re.compile(matchstr, re.MULTILINE | re.S)
         m = re.findall(match, self._raw)
@@ -38,11 +39,11 @@ class TibParser(object):
         return m
 
     def _filter_false_positives(self, sj):
-        if self.filt_str == '.INDO':
+        if self.subject == 'INDO':
             if sj == 'SYSTEM.INDOD':
                 return False
             else: return True
-        elif self.filt_str == '.MEL':
+        elif self.subject == 'MEL':
             if 'MELNGC' in sj:
                 return False
             else: return True
@@ -61,29 +62,12 @@ class TibParser(object):
         dat = dat.upper()
         return [m.data[dat] for m in self]
 
-    def to_dict(self, flat = False, simplify = False):
-        """nested dict with subject as first key"""
-        d = defaultdict(lambda: defaultdict(list))
-        if flat:
-            for m in self:
-                subd = d[m.subject]
-                subd['Date'].append(m.date)
-                for k,v in m.data.items():
-                    subd[k].extend(v)       #difference!
-        else:
-            for m in self:
-                subd = d[m.subject]
-                subd['Date'].append(m.date)
-                for k,v in m.data.items():
-                    subd[k].append(v)       #difference!
-        #if only 1 key, return nested dict only
-        if simplify:
-            if len(d.keys()) == 1: return d[d.keys()[0]]
-        return d
+    def to_dict(self):
+        return self.dp.convert(self.messages, self.subject)
 
     def __repr__(self):
         return "<TibcoParser|Subject:{0}|Messages:{1}>".format(
-                self.filt_str,len(self.messages))
+                self.subject,len(self.messages))
 
     def __iter__(self):
         for m in self.messages:
@@ -112,9 +96,46 @@ class Message(object):
         return '<Message {0}|Date {1}>'.format(
                 self.subject, self.date.isoformat())
 
-class DictParsers(object):
+class DictParser(object):
     """Class to turn parser object into dict based on 
     subject and message characteristics"""
+    def __init__(self):
+        self.parser_dict = {
+                'FPN':self._generic,
+                'FREQ':self._generic,
+                'MEL':self._generic,
+                'INDO':self._generic,
+                'FUELINST':self._fuel,
+                'FUELHH':self._fuel
+                }
 
-    def generic(self):
+    def convert(self, msgs, sj):
+        """Convenience function"""
+        self.msgs = msgs
+        self.sj = sj
+        try:
+            d = self.parser_dict[sj]() 
+        except KeyError:
+            d = self.generic()
+        return d
+
+    def _generic(self):
         """Seems to work with FPN, ??MEL??, INDO, FREQ"""
+        d = defaultdict(lambda: defaultdict(list))
+        for m in self.msgs:
+            subd = d[m.subject]
+            subd['Date'].append(m.date)
+            for k,v in m.data.items():
+                subd[k].append(v)
+        return d
+
+    def _fuel(self):
+        d = defaultdict(lambda: defaultdict(list))
+        for m in self.msgs:
+            subd = d[m.data['FT'][0]]
+            subd['Date'].append(m.date)
+            for k,v in m.data.items():
+                subd[k].append(v)
+        return d
+
+
