@@ -149,10 +149,16 @@ class DictParser(object):
         sp = datetime.timedelta(0,60*30)
         d = defaultdict(lambda: defaultdict(list))
         for m in self.msgs:
-            subd = d[m.data['MI'][0]]
+            #Price
+            subd = d[m.data['MI'][0] + '_Price']
             dt = m.data['SD'][0] + m.data['SP'][0]*sp
             subd['index'].append([dt])
             subd['data'].append(m.data['M1'])
+            #Vol
+            subd = d[m.data['MI'][0] + '_Vol']
+            dt = m.data['SD'][0] + m.data['SP'][0]*sp
+            subd['index'].append([dt])
+            subd['data'].append(m.data['M2'])
         return d
 
 
