@@ -2,6 +2,7 @@
 import re
 from collections import defaultdict
 import tools
+import datetime
 
 class TibParser(object):
     """Main parser object.
@@ -29,7 +30,7 @@ class TibParser(object):
                     date, sj, re.findall(msgre, msg+',')))
 
     def _matcher(self):
-        matchstr = r'^([\d:]+GMT):\ssubject=BMRA\.?([\w.-]*.'+self.subject+\
+        matchstr = r'^([\d:]+GMT):\ssubject=BMRA\.?([\w.-]*\.'+self.subject+\
             r'[\w.-]*),\smessage=\{([^}]*)\}\n'
         match = re.compile(matchstr, re.MULTILINE | re.S)
         m = re.findall(match, self._raw)
@@ -105,12 +106,14 @@ class DictParser(object):
                 'MEL':self._generic,
                 'INDO':self._generic,
                 'FUELINST':self._fuel,
-                'FUELHH':self._fuel
+                'FUELHH':self._fuel,
+                'MID':self._market
                 }
         self._data_dict = {
                 'FPN': ['TS','VP'],
                 'FREQ': ['TS','SF'],
                 'MEL': ['TS','VE'],
+                'MIL': ['TS','VF'],
                 'INDO': ['TP','VD']
                 }
 
@@ -121,7 +124,7 @@ class DictParser(object):
         try:
             d = self._parser_dict[sj]() 
         except KeyError:
-            d = self.generic()
+            d = self._generic()
         return d
 
     def _generic(self):
@@ -140,6 +143,16 @@ class DictParser(object):
             subd = d[m.data['FT'][0]]
             subd['index'].append(m.data['TS'])
             subd['data'].append(m.data['FG'])
+        return d
+
+    def _market(self):
+        sp = datetime.timedelta(0,60*30)
+        d = defaultdict(lambda: defaultdict(list))
+        for m in self.msgs:
+            subd = d[m.data['MI'][0]]
+            dt = m.data['SD'][0] + m.data['SP'][0]*sp
+            subd['index'].append([dt])
+            subd['data'].append(m.data['M1'])
         return d
 
 

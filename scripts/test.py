@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import getter
 
 #for sj in ['freq','fpn','mel','indo']:
-df = getter.get_data('indo','2012-01-01','2012-01-02')
+df = getter.get_data('mid','2012-01-01','2012-01-02')
 
 
 

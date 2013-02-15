@@ -33,7 +33,8 @@ _types = { 'Date': 'timestamp', 'TS': 'timestamp', 'SD': 'timestamp', 'TP': 'tim
         'SP': 'int', 'MsgID': 'int', 'NP': 'int', 'TR': 'int', 'NR': 'int', 'FG': 'int',
         'VE': 'flint', 'VP': 'flint', 'SF': 'float', 'EH': 'float', 'EL': 'float', 'EN': 'float',
         'EO': 'float', 'VG': 'float', 'TH': 'float', 'TL': 'float', 'TN': 'float',
-        'TO': 'float', 'VD': 'float', 'Subject': 'string', 'SW': 'string', 'FT': 'string' }
+        'TO': 'float', 'VD': 'float', 'Subject': 'string', 'SW': 'string', 'FT': 'string',
+        'M1': 'float', 'M2': 'float'}
 
 mtypedict = {
         'BOALF': ['AD', 'NK', 'NP', 'SO', 'TA', 'TS', 'VA'],
