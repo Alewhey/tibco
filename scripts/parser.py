@@ -3,7 +3,6 @@ import re
 from collections import defaultdict
 import tools
 
-
 class TibParser(object):
     """Main parser object.
 
@@ -100,7 +99,7 @@ class DictParser(object):
     """Class to turn parser object into dict based on 
     subject and message characteristics"""
     def __init__(self):
-        self.parser_dict = {
+        self._parser_dict = {
                 'FPN':self._generic,
                 'FREQ':self._generic,
                 'MEL':self._generic,
@@ -108,13 +107,19 @@ class DictParser(object):
                 'FUELINST':self._fuel,
                 'FUELHH':self._fuel
                 }
+        self._data_dict = {
+                'FPN': ['TS','VP'],
+                'FREQ': ['TS','SF'],
+                'MEL': ['TS','VE'],
+                'INDO': ['TP','VD']
+                }
 
     def convert(self, msgs, sj):
         """Convenience function"""
         self.msgs = msgs
         self.sj = sj
         try:
-            d = self.parser_dict[sj]() 
+            d = self._parser_dict[sj]() 
         except KeyError:
             d = self.generic()
         return d
@@ -122,20 +127,19 @@ class DictParser(object):
     def _generic(self):
         """Seems to work with FPN, ??MEL??, INDO, FREQ"""
         d = defaultdict(lambda: defaultdict(list))
+        indexkey,datakey = self._data_dict[self.sj]
         for m in self.msgs:
             subd = d[m.subject]
-            subd['Date'].append(m.date)
-            for k,v in m.data.items():
-                subd[k].append(v)
+            subd['index'].append(m.data[indexkey])
+            subd['data'].append(m.data[datakey])
         return d
 
     def _fuel(self):
         d = defaultdict(lambda: defaultdict(list))
         for m in self.msgs:
             subd = d[m.data['FT'][0]]
-            subd['Date'].append(m.date)
-            for k,v in m.data.items():
-                subd[k].append(v)
+            subd['index'].append(m.data['TS'])
+            subd['data'].append(m.data['FG'])
         return d
 
 

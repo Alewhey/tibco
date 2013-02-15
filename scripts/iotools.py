@@ -60,8 +60,6 @@ class TibIO(object):
 
 class TibPanda(object):
     """Collection of functions to interface pandas and parser dict"""
-    def __init__(self):
-        pass
 
     def filtered(self,d,filtstr):
         """creates filtdict by filtering subject with filtname"""
@@ -69,10 +67,9 @@ class TibPanda(object):
                 d.items() if filtstr in k) 
 
     def to_dataframe(self, d, name):
-        timestr, datastr = self._guess_best_data(d.viewkeys())
-        time = list(chain.from_iterable(d[timestr]))
-        data = list(chain.from_iterable(d[datastr]))
-        df = pd.DataFrame(data, index = time, columns = [name]) 
+        index = list(chain.from_iterable(d['index']))
+        data = list(chain.from_iterable(d['data']))
+        df = pd.DataFrame(data, index=index, columns=[name]) 
         return self._remove_redundant_data(self._remove_dup_timestamps(df))
 
     def _remove_dup_timestamps(self,df):
@@ -92,21 +89,6 @@ class TibPanda(object):
         else:
             return dfs[0]
         
-    def _guess_best_data(self,keys):
-        """Guess which time, data series we are interested in"""
-        for t in ['TS','TP']:
-            if t in keys:
-                time = t
-                break
-        for v in ['VP','SF','VD', 'VE','FG']:
-            if v in keys:
-                data = v
-                break
-        try:
-            return time, data
-        except:
-            raise KeyError("Cannot find appropriate data for DataFrame")
-
 
 class TibTables(pd.HDFStore):
     """Subclass of HDF5Store with extra functions for querying store"""

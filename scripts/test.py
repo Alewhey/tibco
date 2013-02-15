@@ -7,8 +7,7 @@ import matplotlib.pyplot as plt
 import getter
 
 #for sj in ['freq','fpn','mel','indo']:
-tg = getter.TibGetter('fuelhh','2012-01-01','2012-01-02')
-df = tg.get_data()
+df = getter.get_data('indo','2012-01-01','2012-01-02')
 
 
 
