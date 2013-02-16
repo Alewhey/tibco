@@ -107,7 +107,8 @@ class DictParser(object):
                 'INDO':self._generic,
                 'FUELINST':self._fuel,
                 'FUELHH':self._fuel,
-                'MID':self._market
+                'MID':self._market,
+                'WINDFOR': self._wind
                 }
         self._data_dict = {
                 'FPN': ['TS','VP'],
@@ -160,5 +161,20 @@ class DictParser(object):
             subd['index'].append([dt])
             subd['data'].append(m.data['M2'])
         return d
+
+    def _wind(self):
+        d = defaultdict(lambda: defaultdict(list))
+        hh = datetime.timedelta(0,30*60)
+        for m in self.msgs:
+            dof = m.data['TP'][0]
+            subd = d[dof.isoformat()]
+            for ix,fd in enumerate(m.data['SD']):
+                fdt = fd + (m.data['SP'][ix]-1)*hh
+                subd['index'].append([fdt])
+                subd['data'].append([m.data['VG'][ix]])
+        return d
+
+
+
 
 

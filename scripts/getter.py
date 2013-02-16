@@ -24,7 +24,7 @@ def main():
     arg = aparser.parse_args()
     get_data(arg.subject, arg.start_date, arg.end_date, arg.dbpath)
 
-def get_data(subject, start_str, end_str, dbpath = _dbpath):
+def get_data(subject, start_str, end_str, dbpath = _dbpath, get_dict = False):
     #get dates
     start_date = tools.parse_date(start_str)
     end_date = tools.parse_date(end_str)
@@ -34,7 +34,10 @@ def get_data(subject, start_str, end_str, dbpath = _dbpath):
             subject, start_date, end_date)
     # if data missing, check gz has been downloaded and launch processor
     if db_missing_dates:
-        _data_to_db(db_missing_dates, subject, store)
+        d = _data_to_db(db_missing_dates, subject, store)
+        #TODO: Tidy this bit up - get dict??
+        if get_dict:
+            return d
     return store.query_data(subject,
             start_date, end_date, return_df = True)
 
@@ -50,8 +53,10 @@ def _data_to_db(db_missing_dates, subject, store):
             n + 1, nmiss))
         p.parse(raw, subject)
     tp = iotools.TibPanda()
-    df = tp.make_joined_df(p.to_dict())
+    d = p.to_dict()
+    df = tp.make_joined_df(d)
     store.append(subject,df)
+    return d
 
 if __name__ == '__main__':
     main()

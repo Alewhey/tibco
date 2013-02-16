@@ -14,7 +14,7 @@ _subjectlist = ["MELNGC", "IMBALNGC", "TSDF", "NETBSAD", "BOALF", "DF",
         "TSDFD", "DISEBSP", "NDFD", "FREQ", "NDF", "BOAV", "INDO", "SYSWARN",
         "MIL", "MZT", "ITSDO", "INDDEM", "SEL", "QPN", "TEMP", "BOD",
         "TBOD", "NONBM", "RURE", "ISPSTACK", "EBOCF", "MNZT", "FUELINST", 
-        "FUELHH"]
+        "FUELHH", 'WINDFOR']
 
 _known_subject_types = ['BM.BMUNIT.BOALF', 'BM.BMUNIT.BOAV.RANK',
         'BM.BMUNIT.BOD.RANK', 'BM.BMUNIT.DISPTAV.RANK', 'BM.BMUNIT.EBOCF.RANK', 'BM.BMUNIT.FPN', 
